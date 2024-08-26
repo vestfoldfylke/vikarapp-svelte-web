@@ -136,7 +136,7 @@
       } catch (error) {
           isSearching = false
           console.log(error.toString())
-          if (error.toString() === 'Error: Nada users') searchError = `Ingen resultat funnet ved søk på "${searchValue}"... DET ER BJØRN RIIS SIN SKYLD!! 😬`
+          if (error.toString() === 'Error: Nada users') searchError = `Ingen resultat funnet ved søk på "${searchValue}"`
           else if (error.response?.status === 404) searchError = 'Bruker ikke funnet... 😬'
           else if (error.response?.status === 401) searchError = 'Du har ikke lov å søke på det 🚫'
           else searchError = "En feil har oppstått - vennligst prøv igjen"
