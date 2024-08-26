@@ -12,18 +12,26 @@
     export let funcToTrigger = null
     export let selectedUser = null
     export let params = []
+    export let returnSelf = false
 
     let data = []
     
     const searchFunc = async (query) => {
+        if(returnSelf) {
+            return (await getUsers(query, returnSelf)).data
+        } else {
+            return (await getUsers(query)).data
+        }
+        console.log(query)
         // console.log('Searching for:', query)
-        return (await getUsers(query)).data
     }
+
     const searchCallback = searchRes => {
         // Do something with the searchCallback if you want
     }
 
     const getTeacherTeamsData = async (user) => {
+        dataToReturn = []
         data = []
         pageHeader = `Henter team for ${user?.displayName}...`
         if(import.meta.env.VITE_MOCK_API && import.meta.env.VITE_MOCK_API === 'true'){
@@ -36,18 +44,20 @@
         if(response.status !== 200) console.error('Error fetching data')
         if(response.data.length > 0) {
             for (const team of response.data) {
-                data.push([await team.displayName, await team.description])
+                data.push([await team.displayName, await team.description, await team.id])
                 dataToReturn = data
                 pageHeader = `Viser nå teamene til ${user?.displayName}, velg et eller flere team for å starte vikariat`
             }
             columnHeaders = ['Team', 'Beskrivelse']
             teacherTeams.set(dataToReturn)
+        } else {
+            pageHeader = `Fant ingen team som tilhører ${user?.displayName}`
         }
-        pageHeader = `Fant ingen team som tilhører ${user?.displayName}`
         spinner = false
     }
 
     const getTeacherSubstitutions = async (user, params) => {
+        dataToReturn = []
         data = []
         const substituteUpn = user.userPrincipalName 
         const teacherUpn = await params[1] 
@@ -91,6 +101,7 @@
                            await getTeacherSubstitutions(user, params)
                         }
                     } else {
+                        console.log('No function to trigger')
                     }
                 }
             }
