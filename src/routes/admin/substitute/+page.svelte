@@ -4,25 +4,32 @@
     import PersonSearchBar from '../../../components/PersonSearchBar.svelte';
     import Table from '../../../components/Table.svelte';
     import IconSpinner from '../../../components/IconSpinner.svelte';
-    import { teacherSubstitutions, teacherTeams } from '../../../lib/helpers/stores'
+    import Modal from '../../../components/Modal.svelte';
+    import { adminSubsTableData, teacherSubstitutions, teacherTeams } from '../../../lib/helpers/stores'
     import { get } from 'svelte/store';
     import { convertDate } from '../../../lib/helpers/convert-date'
+    import { extendSelectedSubstitutions, getVikarToken } from '../../../lib/useApi';
 
-
-    const pageHeader = 'Her kan du administrere alle vikariater'
+    let pageHeader = 'Her kan du administrere alle vikariater'
+    
     let spinner = false
     let isRowSelected = false
+    let cleanUp = false
+    let showModal = false
+
     let selectedUserVikar = null
     let selectedUserLaerer = null
+    let extendedSubstitutuionsResponse = null
 
     let substituteData = []
     let teachTeamsData = []
     let tableData = []
-    // Quick fix - just navigate to the same page to get afterNavigate to run
-    onMount(() => {
-        // console.log('On mount')
-        // console.log($page.url.pathname)
-    })
+    let selected = []
+    let teamsToModal = []
+    let newSubstitution = []
+
+    const validRoles = ['App.Admin']
+
 
     /* 
         Ved valg av lærer gjøres et søk etter læreren sin teams. Disse vises i en tabell.
@@ -32,13 +39,46 @@
         Det er også mulig å utvide aktive vikariater eller opprette nye vikariater. Dette gjøres ved å søke opp en lærer og en vikar, velge en rad og trykke på "Aktiver Vikariat".
     */
 
-    afterNavigate(() => {
-        // console.log('After navigate')
-        // console.log($page.url.pathname)
-    })
-
     const submitSubstitution = async () => {
-        console.log('Submit substitution')
+        // Get the selected teamId from the teachTeamsData matching the team from the selected array with the team from the teachTeamsData array
+        const teamsToActivate = selected.map(sub => {
+            teamsToModal.push(sub[0])
+            return teachTeamsData.find(team => team[0] === sub[0])
+        }) 
+
+        spinner = true
+        teamsToActivate.forEach(sub => {
+            let subObject = {
+                substituteUpn: selectedUserVikar.userPrincipalName,
+                teacherUpn: selectedUserLaerer.userPrincipalName,
+                teamId: sub[2]
+            }
+            newSubstitution.push(subObject)
+        });
+        // Call api to start substitution
+        pageHeader = 'Aktiverer vikariat...'
+        for (const id of newSubstitution) {
+            if(import.meta.env.VITE_MOCK_API && import.meta.env.VITE_MOCK_API === 'true'){
+                // Pretend to wait for api call
+                await new Promise(resolve => setTimeout(resolve, 2000))
+                // console.log(`New substitution: ${id}`)
+            }
+        }
+        // Extend selected substitutions
+        extendedSubstitutuionsResponse = await extendSelectedSubstitutions(newSubstitution)
+        if(extendedSubstitutuionsResponse.status === 201) {
+            pageHeader = 'Vikariatet ble opprettet'
+            showModal = true
+        } else {
+            pageHeader = 'Noe gikk galt, prøv igjen'
+        }
+        // Clean up states
+        isRowSelected = false
+        spinner = false
+        cleanUp = true
+        newSubstitution = []
+        pageHeader = 'Her kan du administrere alle vikariater'
+        goto('/admin/substitute', { replaceState: false, invalidateAll: true })
     }
 
     // Check for active substitutions for the selected teacher and substitute, if the substitute have an active substitution for the teacher set the team to active and show expiration date.
@@ -47,10 +87,11 @@
         // Check if the selected teacher have any active substitutions
         // If the teacherSubstitutions teamId's match the teacherTeams teamId's, set the team to active and show expiration date.
         // If the teacherSubstitutions teamId's do not match the teacherTeams teamId's, do nothing.
-        if(get(teacherSubstitutions).length > 0 && get(teacherTeams).length > 0) {
-            let teacherSubs = get(teacherSubstitutions)
-            let teacherTeamsData = get(teacherTeams)
+        if(substituteData.length >= 0 && teachTeamsData.length >= 0) {
+            let teacherSubs = substituteData
+            let teacherTeamsData = teachTeamsData
             let data = []
+            adminSubsTableData.set([])
             for (const team of teacherTeamsData) {
                 let teamId = team[0]
                 let teamName = team[1]
@@ -63,46 +104,96 @@
                         teamExpiration = convertDate(sub[2])
                     }
                 }
+                adminSubsTableData.update((value) => [...value, [teamName, teamStatus, teamExpiration]])
                 data.push([teamName, teamStatus, teamExpiration])
             }
-            tableData = data
+            tableData = data 
         }
+    }
+
+    // Hard refresh the page 🤮
+    const reloadPage = () => {
+        const thisPage = window.location.pathname
+        goto('/').then(
+            () => {
+                goto(thisPage)
+            }
+        )
+    }
+
+    const closeModal = () => {
+        showModal = false
+        reloadPage()
     }
 </script>
 <main>
-    <div class="pageHeader">
-        <p>{pageHeader}</p>
-    </div>
-    <div class="tableClass">
-        <h2>Vikar{selectedUserVikar === null || selectedUserVikar === undefined ? '' : `: ${selectedUserVikar.displayName} 🎓`}</h2>
-        <PersonSearchBar placeHolder={'Søk etter vikar'} funcToTrigger={'getTeacherSubstitutions'} params={[selectedUserVikar?.userPrincipalName, undefined, 'active']} bind:dataToReturn={substituteData} bind:selectedUser={selectedUserVikar} bind:spinner={spinner}/>
-        <br>
-        <h2>Lærer{selectedUserLaerer  === null ? '' : `: ${selectedUserLaerer.displayName} 🎓`}</h2>
-        <PersonSearchBar placeHolder={'Søk etter læreren du skal opprette et vikariat for'} funcToTrigger={'getTeacherTeamsData'} bind:selectedUser={selectedUserLaerer} bind:dataToReturn={teachTeamsData} bind:spinner={spinner}/>
-    </div>
-    {#if spinner}
-        <div class="center">
-            <IconSpinner/>
+    {#await getVikarToken(true)}
+        <div class="loading">
+            <IconSpinner width={"32px"} />
         </div>
-    {:else}
-        <div class="tableClass">
-            {#await handleTableData()}
+    {:then token} 
+        {#if !token.roles.some((roles) => validRoles.includes(roles))} 
+            <div class="center">
+                <h2>Her har ikke du rettigheter til å være 🤷‍♂️</h2>
+            </div>
+            <div class="center">
+                <button on:click={ () =>  goto('/')}>Tilbake</button>
+            </div>
+        {:else}
+            <div class="pageHeader">
+                <p>{pageHeader}</p>
+            </div>
+            <div class="tableClass">
+                <h2>Vikar{selectedUserVikar === null || selectedUserVikar === undefined ? '' : `: ${selectedUserVikar.displayName} 🎓`}</h2>
+                <PersonSearchBar placeHolder={'Søk etter vikar'} funcToTrigger={'getTeacherSubstitutions'} returnSelf={true} params={[selectedUserVikar?.userPrincipalName, undefined, 'active']} bind:dataToReturn={substituteData} bind:selectedUser={selectedUserVikar} bind:spinner={spinner}/>
+                <br>
+                <h2>Lærer{selectedUserLaerer  === null ? '' : `: ${selectedUserLaerer.displayName} 🎓`}</h2>
+                <PersonSearchBar placeHolder={'Søk etter læreren du skal opprette et vikariat for'} funcToTrigger={'getTeacherTeamsData'} returnSelf={true} bind:selectedUser={selectedUserLaerer} bind:dataToReturn={teachTeamsData} bind:spinner={spinner}/>
+            </div>
+            {#if spinner}
                 <div class="center">
                     <IconSpinner/>
                 </div>
-            {:then}
-                {#if selectedUserLaerer !== null} 
-                    <Table data={tableData} rowSelection={true} columnHeaders={['Team', 'Status', 'Utløper']}/>
-                {/if}                
-            {/await}
-        </div>
-        <div class="buttons">
-            {#if isRowSelected}
-                <button on:click={() => {submitSubstitution()}}>Aktiver Vikariat</button>
+            {:else}
+                <div class="tableClass">
+                    {#await handleTableData()}
+                        <div class="center">
+                            <IconSpinner/>
+                        </div>
+                    {:then}
+                        {#if selectedUserLaerer !== null}
+                            <Table data={get(adminSubsTableData)} {cleanUp} rowSelection={true} columnHeaders={['Team', 'Status', 'Utløper']} bind:isRowSelected={isRowSelected} bind:selected={selected}/>
+                        {/if}             
+                    {/await}
+                </div>
+                <div class="buttons">
+                    {#if isRowSelected}
+                        <button on:click={() => {submitSubstitution()}}>Aktiver Vikariat</button>
+                    {/if}
+                    <button on:click={() => {goto('/', { replaceState: false, invalidateAll: true })}}>Avbryt</button>
+                </div>
+                <Modal bind:showModal disableClickOutSide={true} disableStandardButton={true}>
+                    <h2 slot="header">Vikariat opprettet</h2>
+                    <div slot="mainContent">
+                        <div class="subs">
+                            <p><strong> Vikar: </strong> {selectedUserVikar?.userPrincipalName}</p>
+                            <p><strong> Lærer: </strong> {selectedUserLaerer?.userPrincipalName}</p>
+                        </div>
+                        <hr>
+                        <div class="subedTeams">
+                            <strong>Team ({teamsToModal.length}):</strong>
+                            {#each teamsToModal as sub}
+                                <ul>
+                                    <li>{sub}</li>
+                                </ul>    
+                            {/each}
+                        </div>
+                    </div>
+                    <button slot="saveButton" on:click={ () => closeModal()}>Ok</button>
+                </Modal>
             {/if}
-            <button on:click={() => {goto('/', { replaceState: false, invalidateAll: true })}}>Avbryt</button>
-        </div>
-    {/if}
+        {/if}
+    {/await}
 </main>
 
 <style>

@@ -66,11 +66,13 @@
                 spinner = true
                 await new Promise(resolve => setTimeout(resolve, 2000))
             } else {
-               spinner = true
-               request.push({
+                spinner = true
+                request.push({
                     substituteUpn: sub[6],
                     teacherUpn: sub[7],
-                    teamId: sub[8]
+                    teamId: sub[8],
+                    status: sub[0],
+                    _id: sub[5]
                 })
             }
         }

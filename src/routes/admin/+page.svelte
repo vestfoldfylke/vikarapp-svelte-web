@@ -2,14 +2,13 @@
     import { page } from '$app/stores'
     import { onMount } from 'svelte';
     import { afterNavigate, beforeNavigate, goto } from '$app/navigation'
+    import { getVikarToken } from '../../lib/useApi';
 
     const pageHeader = 'Administrasjonspanel'
-    
+    let token
     // Quick fix - just navigate to the same page to get afterNavigate to run
-    onMount(() => {
-        // console.log('On mount')
-        // console.log($page.url.pathname)
-    // goto(`/`, {  replaceState: false })
+    onMount(async () => {
+        token = await getVikarToken(true)
     })
 
     afterNavigate(() => {
@@ -23,10 +22,14 @@
         <p>{pageHeader}</p>
     </div>
     <div class="buttons">
-        <button on:click={() => {goto('/admin/substitute', { replaceState: false, invalidateAll: true })}}>Behandle vikariat</button>
-        <button on:click={() => {goto('/admin/history', { replaceState: false, invalidateAll: true })}}>Historikk</button>
-        <button on:click={() => {goto('/admin/schools', { replaceState: false, invalidateAll: true })}}>Behandle søkerettigheter</button>
-        <button on:click={() => {goto('/admin/logs', { replaceState: false, invalidateAll: true })}}>Logger</button>
+        {#if token?.roles.includes('App.Admin')}
+            <button on:click={() => {goto('/admin/substitute', { replaceState: false, invalidateAll: true })}}>Behandle vikariat</button>
+            <button on:click={() => {goto('/admin/history', { replaceState: false, invalidateAll: true })}}>Historikk</button>
+            <button on:click={() => {goto('/admin/logs', { replaceState: false, invalidateAll: true })}}>Logger</button>
+        {/if}
+        {#if token?.roles.includes('App.Config') || token?.roles.includes('App.Admin')}
+            <button on:click={() => {goto('/admin/schools', { replaceState: false, invalidateAll: true })}}>Behandle søkerettigheter</button>
+        {/if}
     </div>
 </main>
 

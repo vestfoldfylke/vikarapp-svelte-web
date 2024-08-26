@@ -4,7 +4,7 @@
     import { afterNavigate, beforeNavigate, goto } from '$app/navigation'
     import Modal from '../../../components/Modal.svelte';
     import Table from '../../../components/Table.svelte';
-    import { getSchools, postSchools, putSchools } from '../../../lib/useApi';
+    import { getSchools, getVikarToken, postSchools, putSchools } from '../../../lib/useApi';
     import IconSpinner from '../../../components/IconSpinner.svelte';
 
     let showModal = false
@@ -28,6 +28,7 @@
 
     const columnHeadersModal = ['Skole']
     const columnHeaders = ['Skole', 'Skoler']
+    const validRoles = ['App.Admin', 'App.Config']
     
     // Quick fix - just navigate to the same page to get afterNavigate to run
     onMount(async () => {
@@ -39,6 +40,17 @@
         // console.log('After navigate')
         // console.log($page.url.pathname)
     })
+
+    // Hard refresh the page 🤮
+    const reloadPage = () => {
+        console.log('Reloading page')
+        const thisPage = window.location.pathname
+        goto('/').then(
+            () => {
+                goto(thisPage)
+            }
+        )
+    }
 
     const addNewSchool = async () => {
         let schoolIds = []
@@ -56,11 +68,19 @@
         cleanUp = true
         schoolName = ''
         postSchoolsResponse = await postSchools(schoolObj)
+        if(postSchoolsResponse.status === 201) {
+           reloadPage()
+        } else {
+            console.log('Error adding school')
+        }
     }
 
     const getSchoolInfo = async () => {
-        // make sure to clear data array
-        data = []
+        // make sure to clear data array and reload the page if there is any data in it 🤮
+        if (data.length > 0) {
+            reloadPage()
+            data = []
+        }
         const response = await getSchools()
         if(response.status === 200) {
             for (const school of response.data) {
@@ -102,16 +122,29 @@
         spinner = false
     }
 </script>
+
 <main>
-    <div class="pageHeader">
-        <p>{pageHeader}</p>
+{#await getVikarToken(true)}
+    <div class="loading">
+        <IconSpinner width={"32px"} />
     </div>
-    {#if spinner}
+{:then token} 
+    {#if !token.roles.some((roles) => validRoles.includes(roles))} 
         <div class="center">
-            <IconSpinner/>
+            <h2>Her har ikke du rettigheter til å være 🤷‍♂️</h2>
+        </div>
+        <div class="center">
+            <button on:click={ () =>  goto('/')}>Tilbake</button>
         </div>
     {:else}
-        {#key postSchoolsResponse}
+        <div class="pageHeader">
+            <p>{pageHeader}</p>
+        </div>
+        {#if spinner}
+            <div class="center">
+                <IconSpinner/>
+            </div>
+        {:else}
             {#await getSchoolInfo() }
                 <div class="center">
                     <IconSpinner/>
@@ -135,8 +168,6 @@
                     <button slot="saveButton" disabled={schoolName.length === 0} on:click={() => addNewSchool()}>Lagre</button>
                 </Modal>
             {/await}
-        {/key}
-        {#key editData && editData.length > 0}
             <Modal showModal={editData.length > 0 ? true : false}>
                 <h2 slot="header">Rediger Skole</h2>
                 <p>Her endrer du hvilke skoler lærere på <strong>{editData[0]}</strong> kan være vikar for.</p>
@@ -159,8 +190,9 @@
                 </div>
                 <button slot="saveButton" on:click={() => editSchool(selectedEdit, editData)}>Lagre</button>
             </Modal>
-        {/key}
+        {/if}
     {/if}
+{/await}
 </main>
 
 <style>

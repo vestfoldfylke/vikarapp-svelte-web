@@ -2,7 +2,7 @@
     import { page } from '$app/stores'
     import { onMount } from 'svelte';
     import { afterNavigate, beforeNavigate, goto } from '$app/navigation'
-    import { extendSelectedSubstitutions } from '../../lib/useApi'
+    import { extendSelectedSubstitutions, getVikarToken } from '../../lib/useApi'
 
     // Components 
     import IconSpinner from '../../components/IconSpinner.svelte'
@@ -21,15 +21,25 @@
     let rowSelection = true
     let spinner = false
     let selectedUser
+    let token 
 
     afterNavigate(() => {
         // console.log($page.url.pathname)
+    })
+    
+    onMount(async () => {
+       token = await getVikarToken(true)
     })
 
     const submitSubstitution = async () => {
         spinner = true
         selected.forEach(sub => {
-            newSubstitution.push(sub[0])
+            let subObject = {
+                substituteUpn: token.upn,
+                teacherUpn: selectedUser.userPrincipalName,
+                teamId: sub[2]
+            }
+            newSubstitution.push(subObject)
         });
         // Call api to start substitution
         pageHeader = 'Aktiverer vikariat...'
