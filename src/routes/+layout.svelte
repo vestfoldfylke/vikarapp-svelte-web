@@ -69,7 +69,7 @@
               <h1 on:click={() => {goto('/')}}>{appTitle}</h1>
             </div>
             <div class="items">
-              {#if token.roles.includes('App.Admin')}
+              {#if token.roles.includes('App.Admin') || token.roles.includes('App.Config')}
                 <button class="link" on:click={() => {goto('/admin', { replaceState: false, invalidateAll: true })}}><span class="material-symbols-outlined">lock</span>Admin</button>
               {/if}
               <button class="link" on:click={() => {goto('/help', { replaceState: false, invalidateAll: true })}}><span class="material-symbols-outlined">settings</span>Innstillinger</button>
