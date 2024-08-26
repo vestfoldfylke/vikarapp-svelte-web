@@ -85,20 +85,25 @@ export const getTeacherTeams = async (teacherUpn) => {
   return await vikarRequest('get', `teacherteams/${teacherUpn}`)
 }
 
-export const getUsers = async (query) => {
+export const getUsers = async (searchTerm, returnSelf) => {
   if (import.meta.env.VITE_MOCK_API && import.meta.env.VITE_MOCK_API === 'true') {
     const mockData = await import('./helpers/api-mock-data')
     return { status: 200, data: mockData.users }
   }
-  return await vikarRequest('get', `teachers/${query}`)
+  return await vikarRequest('get', `teachers/${searchTerm}/${returnSelf}`)
 }
 
-export const extendSelectedSubstitutions = async (substitutionIds) => {
+export const extendSelectedSubstitutions = async (substitutions) => {
+  if(!substitutions || !Array.isArray(substitutions) || substitutions.length === 0) throw new Error('Cannot renew substitution because no request was provided');
+  for (const substitution of substitutions) {
+    if(!substitution.substituteUpn) throw new Error(`Cannot renew substitution because 'substituteUpn'-property is missing`)
+    if(!substitution.teacherUpn) throw new Error(`Cannot renew substitution because 'teacherUpn'-property is missing`)
+    if(!substitution.teamId) throw new Error(`Cannot renew substitution because 'teamId'-property is missing`)
+  }
   if (import.meta.env.VITE_MOCK_API && import.meta.env.VITE_MOCK_API === 'true') {
     return { status: 200, data: 'Success' }
   }
-  return await vikarRequest('post', 'substitutions', substitutionIds)
-
+  return await vikarRequest('post', 'substitutions', substitutions)
 }
 
 export const getSchools = async () => {
