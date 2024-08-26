@@ -1,5 +1,7 @@
 <script>
 	export let showModal; // boolean
+	export let disableClickOutSide = false // boolean
+	export let disableStandardButton = false // boolean
 
 	let dialog; // HTMLDialogElement
 
@@ -14,11 +16,7 @@
 </script>
 
 <!-- svelte-ignore a11y-click-events-have-key-events a11y-no-noninteractive-element-interactions -->
-<dialog
-	bind:this={dialog}
-	on:close={() => (showModal = false)}
-	on:click|self={() => closeModal()}
->
+<dialog bind:this={dialog} on:close={() => (showModal = false)} on:click|self={() => disableClickOutSide ? '' : closeModal()}>
 	<!-- svelte-ignore a11y-no-static-element-interactions -->
 	<div on:click|stopPropagation>
 		<slot name="header" />
@@ -31,7 +29,9 @@
 		<!-- svelte-ignore a11y-autofocus -->
         <div class="buttons">
             <slot name="saveButton"></slot>
-		    <button autofocus on:click={() => closeModal()}>Avbryt</button>
+			{#if disableStandardButton === false}
+				<button autofocus on:click={() => closeModal()}>Avbryt</button>
+			{/if}
         </div>
 	</div>
 </dialog>
