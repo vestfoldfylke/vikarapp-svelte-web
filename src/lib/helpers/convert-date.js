@@ -8,7 +8,7 @@ export const convertDate = (epochTime) => {
     const year = date.getFullYear();
     let month = leadingZero(date.getMonth()+1)
     let dt = leadingZero(date.getDate()-1)
-    let hours = leadingZero(date.getHours())
+    let hours = leadingZero(date.getHours()-2)
     let minutes = leadingZero( date.getMinutes())
 
     return (dt +'/' + month + '/'+ year + ' - ' + hours + ':' + minutes)
