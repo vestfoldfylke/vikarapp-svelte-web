@@ -117,7 +117,7 @@
                 {#if isRowSelected}
                     <button on:click={() => {extendSubstitution()}}>Forleng vikariat</button>
                 {/if}
-                <button on:click={() => {goto('/history', { replaceState: false, invalidateAll: true })}}>Historikk</button>
+                <button hidden on:click={() => {goto('/history', { replaceState: false, invalidateAll: true })}}>Historikk</button>
             </div>
         {/await}
         {/if}
