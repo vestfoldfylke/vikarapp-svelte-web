@@ -69,7 +69,7 @@ export const getSubstitutions = async (substituteUpn, teacherUpn, status, years)
   }
 
   if (import.meta.env.VITE_MOCK_API && import.meta.env.VITE_MOCK_API === 'true') {
-    const mockData = await import('./helpers/api-mock-data')
+    // const mockData = await import('./helpers/api-mock-data')
     if(substituteUpn === 'marius.netten.skeie@telemarkfylke.no' && status === 'active') return { status: 200, data: mockData.mySubstitutions.filter(sub => sub.status === 'active') }
     if(teacherUpn) return { status: 200, data: mockData.mySubstitutions.filter(sub => sub.teacherUpn === teacherUpn) }
     return { status: 200, data: mockData.mySubstitutions.filter(sub => sub.status === 'expired') }
@@ -79,7 +79,7 @@ export const getSubstitutions = async (substituteUpn, teacherUpn, status, years)
 
 export const getTeacherTeams = async (teacherUpn) => {
   if (import.meta.env.VITE_MOCK_API && import.meta.env.VITE_MOCK_API === 'true') {
-    const mockData = await import('./helpers/api-mock-data')
+    // const mockData = await import('./helpers/api-mock-data')
     return { status: 200, data: mockData.teams }
   }
   return await vikarRequest('get', `teacherteams/${teacherUpn}`)
@@ -87,7 +87,7 @@ export const getTeacherTeams = async (teacherUpn) => {
 
 export const getUsers = async (searchTerm, returnSelf) => {
   if (import.meta.env.VITE_MOCK_API && import.meta.env.VITE_MOCK_API === 'true') {
-    const mockData = await import('./helpers/api-mock-data')
+    // const mockData = await import('./helpers/api-mock-data')
     return { status: 200, data: mockData.users }
   }
   return await vikarRequest('get', `teachers/${searchTerm}/${returnSelf}`)
@@ -108,7 +108,7 @@ export const extendSelectedSubstitutions = async (substitutions) => {
 
 export const getSchools = async () => {
   if (import.meta.env.VITE_MOCK_API && import.meta.env.VITE_MOCK_API === 'true') {
-    const mockData = await import('./helpers/api-mock-data')
+    // const mockData = await import('./helpers/api-mock-data')
     return { status: 200, data: mockData.schools }
   }
   return await vikarRequest('get', 'schools')
