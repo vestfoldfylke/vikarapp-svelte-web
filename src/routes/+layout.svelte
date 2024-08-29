@@ -1,6 +1,7 @@
 <script>
     import '../app.css' // Add global css (and make it hot reload)
-    import logo from '$lib/assets/logo.svg'
+    import logoTFK from '$lib/assets/logo.svg'
+    import logoVFK from '$lib/assets/vfk_logo.png'
     import { login, logout, getMsalClient } from '../lib/auth/msal-auth'
     // import DusteSearchBar from '../lib/components/DusteSearchBar.svelte'
     import { onMount } from 'svelte'
@@ -14,8 +15,16 @@
     // console.log('Rett på: ', currentPage)
     // console.log('Fra window: ', window.location.href)
   
-  
     const appTitle = "VikarApp"
+    let logo = ""
+    let iconPath = ""
+    if(import.meta.env.VITE_COUNTY === 'Telemark') {
+      logo = logoTFK
+      iconPath = 'static/telemark-favicon-32x32.png'
+    } else {
+      logo = logoVFK
+      iconPath = 'static/vestfold-favicon-32x32.png'
+    }
   
     onMount(() => {
       const authenticate = async () => {
@@ -40,6 +49,9 @@
     })
   
   </script>
+    <svelte:head>
+      <link rel="icon" href={iconPath} />
+    </svelte:head>
     {#if !account}
       <div class="loading">
         <IconSpinner width={"32px"} />
