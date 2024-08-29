@@ -3,6 +3,8 @@
     import { onMount } from 'svelte';
     import { getSubstitutions, getVikarToken, extendSelectedSubstitutions} from '../lib/useApi'
     import { convertDate } from '../lib/helpers/convert-date'
+    import { convertStatus } from '../lib/helpers/convert-status'
+
 
     // Components
     import IconSpinner from '../components/IconSpinner.svelte'
@@ -28,7 +30,7 @@
         if(response.data.length > 0) {
             for (const substitution of response.data) {
                 data.push([
-                    await substitution.status, 
+                    convertStatus(await substitution.status), 
                     await substitution.substituteName, 
                     await substitution.teacherName, 
                     await substitution.teamName, 
