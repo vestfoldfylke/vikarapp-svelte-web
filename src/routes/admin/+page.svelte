@@ -25,7 +25,7 @@
         {#if token?.roles.includes('App.Admin')}
             <button on:click={() => {goto('/admin/substitute', { replaceState: false, invalidateAll: true })}}>Behandle vikariat</button>
             <button hidden on:click={() => {goto('/admin/history', { replaceState: false, invalidateAll: true })}}>Historikk</button>
-            <button on:click={() => {goto('/admin/logs', { replaceState: false, invalidateAll: true })}}>Logger</button>
+            <button hidden on:click={() => {goto('/admin/logs', { replaceState: false, invalidateAll: true })}}>Logger</button>
         {/if}
         {#if token?.roles.includes('App.Config') || token?.roles.includes('App.Admin')}
             <button on:click={() => {goto('/admin/schools', { replaceState: false, invalidateAll: true })}}>Behandle søkerettigheter</button>
