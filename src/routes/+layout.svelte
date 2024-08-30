@@ -3,8 +3,7 @@
     import logoTFK from '$lib/assets/logo.svg'
     import logoVFK from '$lib/assets/vfk_logo.png'
     import favTFK from '../../static/favicon-32x32.png'
-    // import favTFK from '$lib/assets/telemark-favicon-32x32.png'
-    // import favVFK from '$lib/assets/vestfold-favicon-32x32.png'
+    import favVFK from '../../static/vestfold-favicon-32x32.png'
     import { login, logout, getMsalClient } from '../lib/auth/msal-auth'
     // import DusteSearchBar from '../lib/components/DusteSearchBar.svelte'
     import { onMount } from 'svelte'
@@ -26,7 +25,7 @@
       iconPath = favTFK
     } else {
       logo = logoVFK
-      // iconPath = favVFK
+      iconPath = favVFK
     }
   
     onMount(() => {
