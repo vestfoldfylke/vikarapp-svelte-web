@@ -2,6 +2,9 @@
     import '../app.css' // Add global css (and make it hot reload)
     import logoTFK from '$lib/assets/logo.svg'
     import logoVFK from '$lib/assets/vfk_logo.png'
+    import favTFK from '../../static/favicon-32x32.png'
+    // import favTFK from '$lib/assets/telemark-favicon-32x32.png'
+    // import favVFK from '$lib/assets/vestfold-favicon-32x32.png'
     import { login, logout, getMsalClient } from '../lib/auth/msal-auth'
     // import DusteSearchBar from '../lib/components/DusteSearchBar.svelte'
     import { onMount } from 'svelte'
@@ -20,10 +23,10 @@
     let iconPath = ""
     if(import.meta.env.VITE_COUNTY === 'Telemark') {
       logo = logoTFK
-      iconPath = 'static/telemark-favicon-32x32.png'
+      iconPath = favTFK
     } else {
       logo = logoVFK
-      iconPath = 'static/vestfold-favicon-32x32.png'
+      // iconPath = favVFK
     }
   
     onMount(() => {
@@ -50,7 +53,7 @@
   
   </script>
     <svelte:head>
-      <link rel="icon" href={iconPath} />
+      <link rel="icon" type="image/svg" href={iconPath} />
     </svelte:head>
     {#if !account}
       <div class="loading">
@@ -84,7 +87,7 @@
               {#if token.roles.includes('App.Admin') || token.roles.includes('App.Config')}
                 <button class="link" on:click={() => {goto('/admin', { replaceState: false, invalidateAll: true })}}><span class="material-symbols-outlined">lock</span>Admin</button>
               {/if}
-              <button class="link" on:click={() => {goto('/help', { replaceState: false, invalidateAll: true })}}><span class="material-symbols-outlined">settings</span>Innstillinger</button>
+              <button class="link" hidden on:click={() => {goto('/help', { replaceState: false, invalidateAll: true })}}><span class="material-symbols-outlined">settings</span>Innstillinger</button>
             </div>
           </div>
           <div class="appContent">
