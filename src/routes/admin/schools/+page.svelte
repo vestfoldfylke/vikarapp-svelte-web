@@ -202,7 +202,7 @@
       justify-content: flex-start;
       align-items: center;
       flex-wrap: nowrap;
-      height: 100vh;
+      height: 70vh;
     }
     .inputs {
         display: flex;

@@ -38,7 +38,7 @@
         display: flex;
         flex-direction: column;
         align-items: center;
-        height: 100vh;
+        height: 70vh;
     }
     .buttons {
         display: flex;
