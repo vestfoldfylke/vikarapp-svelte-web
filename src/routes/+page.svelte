@@ -132,7 +132,7 @@
       flex-direction: column;
       justify-content: center;
       align-items: center;
-      min-height: 60vh;
+      min-height: 70vh;
     }
      .buttons {
       display: flex;
