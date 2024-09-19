@@ -53,6 +53,7 @@
   </script>
     <svelte:head>
       <link rel="icon" type="image/svg" href={iconPath} />
+      <title>VikarApp</title>
     </svelte:head>
     {#if !account}
       <div class="loading">
