@@ -2,8 +2,8 @@
     import '../app.css' // Add global css (and make it hot reload)
     import logoTFK from '$lib/assets/logo.svg'
     import logoVFK from '$lib/assets/vfk_logo.png'
-    import favTFK from '../../static/favicon-32x32.png'
-    import favVFK from '../../static/vestfold-favicon-32x32.png'
+    import favTFK from '$lib/assets/favicon-32x32.png'
+    import favVFK from '$lib/assets/vestfold-favicon-32x32.png'
     import { login, logout, getMsalClient } from '../lib/auth/msal-auth'
     // import DusteSearchBar from '../lib/components/DusteSearchBar.svelte'
     import { onMount } from 'svelte'
@@ -144,8 +144,6 @@
       max-width: 1080px;
       background-color: var(--vann);
       border-radius: 10px;
-      height: 90vh;
-      max-height: 100vh;
       margin: 40px auto;
       overflow: hidden;
     }
@@ -189,7 +187,6 @@
       flex-direction: column;
       background-color: var(--himmel-10);
       width: 100%;
-      height: 90%;
       overflow-y: auto;
       padding: 1rem;
       border-radius: 10px;
