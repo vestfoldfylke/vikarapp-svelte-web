@@ -44,7 +44,7 @@
         max-height: 41em;
 		border: none;
 		padding: 0;
-		overflow: hidden;
+		overflow-x: hidden;
 	}
 	dialog::backdrop {
 		background: rgba(0, 0, 0, 0.3);
