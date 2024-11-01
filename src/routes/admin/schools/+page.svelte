@@ -167,29 +167,29 @@
                     </div>
                     <button slot="saveButton" disabled={schoolName.length === 0} on:click={() => addNewSchool()}>Lagre</button>
                 </Modal>
+                <Modal showModal={editData.length > 0 ? true : false}>
+                    <h2 slot="header">Rediger Skole</h2>
+                    <p>Her endrer du hvilke skoler lærere på <strong>{editData[0]}</strong> kan være vikar for.</p>
+                    <p>Navnet på skolen må være helt likt det som står i companyName i entraID</p>
+                    <div class="inputs">
+                        <input bind:value={editData[0]} disabled type="text" bind:this={school} placeholder="Skriv inn skolens navn"/>
+                    </div>
+                    {#if editData[1]?.length > 0}
+                        <p style="color: red;"><strong>På grunn av en bug må du legge til disse skolene igjen, selv om de alt har tilgang til å være vikar {editData[0]}.</strong></p>
+                        <p style="color: red;"><strong>Om du ikke velger noen skoler og trykker "Lagre" vil du slette de tilgangene som er satt opp for {editData[0]}</strong></p>
+                        {#each data as school}
+                            {#if editData[1].includes(school[2])}
+                                <p><strong>{(school[0])}</strong></p>
+                            {/if}
+                        {/each}
+                    {/if}
+                    <div class="mainContent" slot="mainContent">
+                        <!-- Remove the selected school from the data array passed to the table in the edit modal, no need to give permisions to the same school you are editing -->
+                        <Table columnHeaders={columnHeadersModal} {data} {rowSelection} {cleanUp} tableRowToBeEdited={true} {editData} preSelection={true} bind:isRowSelected={isRowSelectedEdit} bind:selected={selectedEdit}/>
+                    </div>
+                    <button slot="saveButton" on:click={() => editSchool(selectedEdit, editData)}>Lagre</button>
+                </Modal>
             {/await}
-            <Modal showModal={editData.length > 0 ? true : false}>
-                <h2 slot="header">Rediger Skole</h2>
-                <p>Her endrer du hvilke skoler lærere på <strong>{editData[0]}</strong> kan være vikar for.</p>
-                <p>Navnet på skolen må være helt likt det som står i companyName i entraID</p>
-                <div class="inputs">
-                    <input bind:value={editData[0]} disabled type="text" bind:this={school} placeholder="Skriv inn skolens navn"/>
-                </div>
-                {#if editData[1]?.length > 0}
-                    <p style="color: red;"><strong>På grun av en bug må du legge til disse skolene igjen, selv om de alt har tilgang til å være vikar {editData[0]}.</strong></p>
-                    <p style="color: red;"><strong>Om du ikke velger noen skoler og trykker "Lagre" vil du slette de tilgangene som er satt opp for {editData[0]}</strong></p>
-                    {#each data as school}
-                        {#if editData[1].includes(school[2])}
-                            <p><strong>{(school[0])}</strong></p>
-                        {/if}
-                    {/each}
-                {/if}
-                <div class="mainContent" slot="mainContent">
-                    <!-- Remove the selected school from the data array passed to the table in the edit modal, no need to give permisions to the same school you are editing -->
-                    <Table columnHeaders={columnHeadersModal} {data} {rowSelection} {cleanUp} tableRowToBeEdited={true} {editData} preSelection={true} bind:isRowSelected={isRowSelectedEdit} bind:selected={selectedEdit}/>
-                </div>
-                <button slot="saveButton" on:click={() => editSchool(selectedEdit, editData)}>Lagre</button>
-            </Modal>
         {/if}
     {/if}
 {/await}
