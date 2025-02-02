@@ -22,7 +22,7 @@
         } else {
             return (await getUsers(query)).data
         }
-        console.log(query)
+        // console.log(query)
         // console.log('Searching for:', query)
     }
 
@@ -91,7 +91,7 @@
                 second: user.jobTitle,
                 // third: user.company,
                 onClick: async () => {
-                    console.log(`Clicked on ${user?.displayName}`)
+                    // console.log(`Clicked on ${user?.displayName}`)
                     selectedUser = user
                     if(funcToTrigger === 'getTeacherTeamsData') {
                         await getTeacherTeamsData(user)
