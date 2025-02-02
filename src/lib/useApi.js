@@ -12,7 +12,6 @@ export const getVikarToken = async (decoded) => {
   try {
     const msalClient = await getMsalClient()
     if (!msalClient.getActiveAccount()) {
-      console.log('Ingen aktiv bruker her enda - venter på ferdig pålogging før vi gjør API spørringer')
       throw new Error('User not logged in yet - waiting for successful login')
     }
     accessToken = (await msalClient.acquireTokenSilent({ scopes: [import.meta.env.VITE_VIKAR_API_SCOPE] })).accessToken

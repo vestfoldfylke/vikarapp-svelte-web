@@ -78,8 +78,41 @@
                 })
             }
         }
-        // Post request
-        if(request.length > 0) {
+        
+        // Inform the user that they are trying to extend a duplicate substitution and/or substitutions with more than 1 unique teacher
+        let confirmText = ''
+        let uniqueTeachers = []
+        let uniqueSubs = []
+
+        // Check if the selected substitutions have more than one unique teacher
+        selected.forEach(sub => {
+            if(!uniqueTeachers.includes(sub[7])) {
+                uniqueTeachers.push(sub[7])
+            }
+        })
+
+        // Check if the selected substitutions have more than one unique substitution
+        selected.forEach(sub => {
+            if(!uniqueSubs.includes(sub[5])) {
+                uniqueSubs.push(sub[5])
+            }
+        })
+
+        if(uniqueTeachers.length > 1 && uniqueSubs.length > 1) {
+            confirmText = `Du har valgt vikariater med flere enn en unik lærer og flere vikariater. Er du sikker på at du skal være vikar for: ${uniqueSubs.length} klasser og ${uniqueTeachers.length} lærere? Lærere: 
+                ${uniqueTeachers.join(',\n')}
+            `
+        } else if(uniqueSubs.length > 1) {
+            confirmText = `Du har valgt flere vikariater, vil du forlenge ${uniqueSubs.length} vikariater?`
+        } else if(uniqueTeachers.length > 1) {
+            confirmText = `Du har valgt vikariater med flere enn en unik lærer. Er du sikker på at du skal være vikar for: ${uniqueTeachers.length} lærere? Lærere: 
+                ${uniqueTeachers.join(',\n')}`
+        } else {
+            confirmText = 'Vil du forlenge vikariatet?'
+        }
+
+        // If the user confirms the extension, extend the selected substitutions
+        if(confirm(confirmText)) {
             await extendSelectedSubstitutions(request)
         }
         isRowSelected = false
