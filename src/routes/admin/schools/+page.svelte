@@ -41,9 +41,8 @@
         // console.log($page.url.pathname)
     })
 
-    // Hard refresh the page 🤮
+    // Hard refresh the page
     const reloadPage = () => {
-        console.log('Reloading page')
         const thisPage = window.location.pathname
         goto('/').then(
             () => {
