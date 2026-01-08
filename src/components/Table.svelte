@@ -40,7 +40,7 @@
     }
 
     // Create a new data array where any data values above the highest index in columnHeaders are removed
-    const newData = data.map(row => row.slice(0, columnHeaders.length))
+    const newData = data.map(row => Object.values(row).slice(0, columnHeaders.length))
 
     if(action && columnHeaders.length > 0 && !columnHeaders.includes(actionTextHeader))  {
         // Merge columnHeaders and actionTextHeader, quick fix for handling the columnHeaders if we add an action button to the table.
