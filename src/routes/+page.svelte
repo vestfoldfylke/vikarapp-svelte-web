@@ -48,7 +48,7 @@
             teamId: substitution.teamId
           })
         }
-        columnHeaders = ['Status', 'Vikar', 'Lærer', 'Klasser', 'Utløper'] // TODO: Antall ganger forlenget
+        columnHeaders = ['Status', 'Vikar', 'Lærer', 'Klasser', 'Utløper']
     }
 
     onMount(async () => {
