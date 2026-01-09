@@ -34,19 +34,13 @@
             return
         }
 
-        let hasExtendedSubstitutions = false
         for (const substitution of response.data) {
-          if (substitution.substitutionUpdated > 0) {
-            hasExtendedSubstitutions = true
-          }
-
           data.push({
             statusReadable: convertStatus(substitution.status),
             substituteName: substitution.substituteName,
             teacherName: substitution.teacherName,
             teamName: substitution.teamName,
             expirationTimestamp: convertDate(substitution.expirationTimestamp),
-            extendedCount: substitution.substitutionUpdated > 0 ? substitution.substitutionUpdated : '',
             _id: substitution._id,
             status: substitution.status,
             substituteUpn: substitution.substituteUpn,
@@ -54,10 +48,7 @@
             teamId: substitution.teamId
           })
         }
-        columnHeaders = ['Status', 'Vikar', 'Lærer', 'Klasser', 'Utløper']
-        if (hasExtendedSubstitutions) {
-            columnHeaders.push('Antall forlengelser')
-        }
+        columnHeaders = ['Status', 'Vikar', 'Lærer', 'Klasser', 'Utløper'] // TODO: Antall ganger forlenget
     }
 
     onMount(async () => {
