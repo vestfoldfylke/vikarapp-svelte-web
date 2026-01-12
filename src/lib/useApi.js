@@ -1,4 +1,3 @@
-import axios from 'axios'
 import { getMsalClient, login } from './auth/msal-auth'
 import { jwtDecode } from 'jwt-decode'
 
@@ -41,16 +40,28 @@ export const getVikarToken = async (decoded) => {
 
 const vikarRequest = async (method, endpoint, body) => {
   const accessToken = await getVikarToken()
-  const headers = {
-    authorization: `Bearer ${accessToken}`
+
+  const request = {
+    method: method.toUpperCase(),
+    headers: {
+      authorization: `Bearer ${accessToken}`
+    }
   }
-  if (['get', 'delete'].includes(method.toLowerCase())) {
-    const res = await axios[method](`${import.meta.env.VITE_VIKAR_API_URI}/${endpoint}`, { headers })
-    return { status: res.status, data: res.data }
-  } else {
-    const res = await axios[method](`${import.meta.env.VITE_VIKAR_API_URI}/${endpoint}`, body, { headers })
-    return { status: res.status, data: res.data }
+
+  if (!['get', 'delete'].includes(method.toLowerCase()) && body) {
+    request.body = JSON.stringify(body)
   }
+
+  const response = await fetch(`${import.meta.env.VITE_VIKAR_API_URI}/${endpoint}`, request)
+
+  if (!response.ok) {
+    const errorData = await response.json()
+    console.error('API', response.status,'request error on a', method, 'request. StatusText:', response.statusText, '-> ErrorData:', errorData)
+    return { status: response.status, data: response.statusText }
+  }
+
+  const data = await response.json()
+  return { status: response.status, data }
 }
 
 // Get Substitutions for a user
@@ -126,14 +137,3 @@ export const putSchools = async (id, schoolData) => {
   }
   return await vikarRequest('put', `schools/${id}`, schoolData)
 }
-
-// // Get chucky
-// export const getChuck = async () => {
-//   const res = (await axios.get('https://api.chucknorris.io/jokes/categories')).data
-//   return res.map(ele => {
-//     return {
-//       value: ele,
-//       category: 'Et valg'
-//     }
-//   })
-// }

@@ -17,7 +17,6 @@
 	"type": "module",
 	"dependencies": {
 		"@azure/msal-browser": "^3.17.0",
-		"axios": "^1.7.2",
 		"jwt-decode": "^4.0.0"
 	}
 }
