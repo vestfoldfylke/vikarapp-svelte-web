@@ -1,17 +1,16 @@
 <script>
-    import { onMount } from 'svelte';
-    import { afterNavigate, beforeNavigate, goto } from '$app/navigation'
+    import { goto } from '$app/navigation'
     import PersonSearchBar from '../../../components/PersonSearchBar.svelte';
     import Table from '../../../components/Table.svelte';
     import IconSpinner from '../../../components/IconSpinner.svelte';
     import Modal from '../../../components/Modal.svelte';
-    import { adminSubsTableData, teacherSubstitutions, teacherTeams } from '../../../lib/helpers/stores'
+    import { adminSubsTableData } from '../../../lib/helpers/stores'
     import { get } from 'svelte/store';
     import { convertDate } from '../../../lib/helpers/convert-date'
     import { extendSelectedSubstitutions, getVikarToken } from '../../../lib/useApi';
 
     let pageHeader = 'Her kan du administrere alle vikariater'
-    
+
     let spinner = false
     let isRowSelected = false
     let cleanUp = false
@@ -23,7 +22,6 @@
 
     let substituteData = []
     let teachTeamsData = []
-    let tableData = []
     let selected = []
     let teamsToModal = []
     let newSubstitution = []
@@ -42,8 +40,13 @@
     const submitSubstitution = async () => {
         // Get the selected teamId from the teachTeamsData matching the team from the selected array with the team from the teachTeamsData array
         const teamsToActivate = selected.map(sub => {
-            teamsToModal.push(sub[0])
-            return teachTeamsData.find(team => team[0] === sub[0])
+          teamsToModal.push(sub.teamName)
+          const data = teachTeamsData.find(team => team.id === sub.teamId)
+          return {
+            ...data,
+            status: sub.teamStatus,
+            _id: sub.dbId
+          }
         }) 
 
         spinner = true
@@ -51,27 +54,32 @@
             let subObject = {
                 substituteUpn: selectedUserVikar.userPrincipalName,
                 teacherUpn: selectedUserLaerer.userPrincipalName,
-                teamId: sub[2]
+                teamId: sub.id,
+                status: sub.status,
+                _id: sub._id
             }
             newSubstitution.push(subObject)
         });
+
         // Call api to start substitution
         pageHeader = 'Aktiverer vikariat...'
         for (const id of newSubstitution) {
-            if(import.meta.env.VITE_MOCK_API && import.meta.env.VITE_MOCK_API === 'true'){
+            if (import.meta.env.VITE_MOCK_API && import.meta.env.VITE_MOCK_API === 'true') {
                 // Pretend to wait for api call
                 await new Promise(resolve => setTimeout(resolve, 2000))
                 // console.log(`New substitution: ${id}`)
             }
         }
+
         // Extend selected substitutions
         extendedSubstitutuionsResponse = await extendSelectedSubstitutions(newSubstitution)
-        if(extendedSubstitutuionsResponse.status === 201) {
+        if (extendedSubstitutuionsResponse.status === 201) {
             pageHeader = 'Vikariatet ble opprettet'
             showModal = true
         } else {
             pageHeader = 'Noe gikk galt, prøv igjen'
         }
+
         // Clean up states
         isRowSelected = false
         spinner = false
@@ -87,27 +95,36 @@
         // Check if the selected teacher have any active substitutions
         // If the teacherSubstitutions teamId's match the teacherTeams teamId's, set the team to active and show expiration date.
         // If the teacherSubstitutions teamId's do not match the teacherTeams teamId's, do nothing.
-        if(substituteData.length >= 0 && teachTeamsData.length >= 0) {
-            let teacherSubs = substituteData
-            let teacherTeamsData = teachTeamsData
-            let data = []
+        if (substituteData.length >= 0 && teachTeamsData.length >= 0) {
             adminSubsTableData.set([])
-            for (const team of teacherTeamsData) {
-                let teamId = team[0]
-                let teamName = team[1]
-                let teamDescription = team[2]
+            for (const team of teachTeamsData) {
+                let dbId = ''
+                let teamId = team.id
+                let teamName = team.displayName
+                let teamStatusReadable = ''
                 let teamStatus = ''
                 let teamExpiration = ''
-                for (const sub of teacherSubs) {
-                    if(sub[0] === teamId) {
-                        teamStatus = 'Aktiv'
-                        teamExpiration = convertDate(sub[2])
-                    }
+                for (const sub of substituteData) {
+                  if (sub.teamId === teamId) {
+                      teamStatusReadable = 'Aktiv'
+                      dbId = sub._id
+                      teamExpiration = convertDate(sub.expirationTimestamp)
+                  }
+
+                  teamStatus = sub.status
                 }
-                adminSubsTableData.update((value) => [...value, [teamName, teamStatus, teamExpiration]])
-                data.push([teamName, teamStatus, teamExpiration])
+                adminSubsTableData.update((value) => [
+                  ...value,
+                  {
+                    teamName,
+                    teamStatusReadable: teamStatusReadable,
+                    teamExpiration,
+                    teamStatus,
+                    teamId,
+                    dbId
+                  }
+                ])
             }
-            tableData = data 
         }
     }
 
@@ -160,7 +177,7 @@
                         <div class="center">
                             <IconSpinner/>
                         </div>
-                    {:then}
+                    {:then _}
                         {#if selectedUserLaerer !== null}
                             <Table data={get(adminSubsTableData)} {cleanUp} rowSelection={true} columnHeaders={['Team', 'Status', 'Utløper']} bind:isRowSelected={isRowSelected} bind:selected={selected}/>
                         {/if}             
