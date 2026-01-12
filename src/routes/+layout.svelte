@@ -20,7 +20,7 @@
     const appTitle = "VikarApp"
     let logo = ""
     let iconPath = ""
-    if(import.meta.env.VITE_COUNTY === 'Telemark') {
+    if (import.meta.env.VITE_COUNTY === 'Telemark') {
       logo = logoTFK
       iconPath = favTFK
     } else {
@@ -53,6 +53,7 @@
   </script>
     <svelte:head>
       <link rel="icon" type="image/svg" href={iconPath} />
+      <title>VikarApp</title>
     </svelte:head>
     {#if !account}
       <div class="loading">

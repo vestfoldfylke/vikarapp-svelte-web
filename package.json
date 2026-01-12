@@ -1,11 +1,12 @@
 {
 	"name": "vikarapp-svelte-web",
-	"version": "0.0.1",
+	"version": "0.1.0",
 	"private": true,
 	"scripts": {
 		"dev": "vite dev",
 		"build": "vite build",
-		"preview": "vite preview"
+		"preview": "vite preview",
+		"test": "echo \"Error: no test specified\" && exit 0"
 	},
 	"devDependencies": {
 		"@sveltejs/adapter-auto": "^3.0.0",
@@ -17,7 +18,6 @@
 	"type": "module",
 	"dependencies": {
 		"@azure/msal-browser": "^3.17.0",
-		"axios": "^1.7.2",
 		"jwt-decode": "^4.0.0"
 	}
 }

@@ -1,7 +1,6 @@
 <script>
-    import { page } from '$app/stores'
     import { onMount } from 'svelte';
-    import { afterNavigate, beforeNavigate, goto } from '$app/navigation'
+    import { afterNavigate, goto } from '$app/navigation'
     import { extendSelectedSubstitutions, getVikarToken } from '../../lib/useApi'
 
     // Components 
@@ -12,7 +11,6 @@
     let pageHeader = 'Søk opp en lærer og start ett eller flere vikariat'
     let data = []
     let columnHeaders = []
-    let response = []
     let selected = []
     let newSubstitution = []
 
@@ -37,21 +35,25 @@
             let subObject = {
                 substituteUpn: token.upn,
                 teacherUpn: selectedUser.userPrincipalName,
-                teamId: sub[2]
+                teamId: sub.id,
+                status: sub.status
             }
             newSubstitution.push(subObject)
         });
+
         // Call api to start substitution
         pageHeader = 'Aktiverer vikariat...'
         for (const id of newSubstitution) {
-            if(import.meta.env.VITE_MOCK_API && import.meta.env.VITE_MOCK_API === 'true'){
+            if (import.meta.env.VITE_MOCK_API && import.meta.env.VITE_MOCK_API === 'true') {
                 // Pretend to wait for api call
                 await new Promise(resolve => setTimeout(resolve, 2000))
                 // console.log(`New substitution: ${id}`)
             }
         }
+
         // Extend selected substitutions
         await extendSelectedSubstitutions(newSubstitution)
+
         // Clean up states
         isRowSelected = false
         spinner = false
@@ -72,7 +74,7 @@
         </div>
     {:else}
         <div class="tableClass">
-            <PersonSearchBar placeHolder={'Søk etter læreren du skal være vikar for'} funcToTrigger={'getTeacherTeamsData'} route={'substitute'} bind:selectedUser={selectedUser} bind:dataToReturn={data} bind:columnHeaders={columnHeaders} bind:spinner={spinner} bind:pageHeader={pageHeader}/>
+            <PersonSearchBar placeHolder={'Søk etter læreren du skal være vikar for'} funcToTrigger={'getTeacherTeamsData'} bind:selectedUser={selectedUser} bind:dataToReturn={data} bind:columnHeaders={columnHeaders} bind:spinner={spinner} bind:pageHeader={pageHeader}/>
             <br>
             <Table {columnHeaders} {data} {rowSelection} {cleanUp} bind:isRowSelected={isRowSelected} bind:selected={selected}/>
         </div>
