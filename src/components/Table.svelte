@@ -34,15 +34,15 @@
     }
 
     // Remove the row that is beeing edited from the data array
-    if(tableRowToBeEdited) {
+    if (tableRowToBeEdited) {
        let rowToBeEditedRemoved = data.filter(school => school[0] !== editData[0])
        data = (rowToBeEditedRemoved)
     }
 
     // Create a new data array where any data values above the highest index in columnHeaders are removed
-    const newData = data.map(row => row.slice(0, columnHeaders.length))
+    const newData = data.map(row => Object.values(row).slice(0, columnHeaders.length))
 
-    if(action && columnHeaders.length > 0 && !columnHeaders.includes(actionTextHeader))  {
+    if (action && columnHeaders.length > 0 && !columnHeaders.includes(actionTextHeader))  {
         // Merge columnHeaders and actionTextHeader, quick fix for handling the columnHeaders if we add an action button to the table.
         // When data is updated the columnHeaders.length will be "too long" and we will get data that is not supposed to be there.
         // But that data is needed when we want to do something with the data in the table (like edit or delete)
@@ -50,7 +50,7 @@
         columnHeadersAction.push(actionTextHeader)
     }
 
-    if(cleanUp) {
+    if (cleanUp) {
         selected = []
         isRowSelected = false
         cleanUp = false

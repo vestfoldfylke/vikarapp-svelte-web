@@ -1,4 +1,3 @@
-import axios from 'axios'
 import { getMsalClient, login } from './auth/msal-auth'
 import { jwtDecode } from 'jwt-decode'
 
@@ -6,17 +5,16 @@ export const getVikarToken = async (decoded) => {
   // MOCK access token for local api (the access token is just a demo token - nothing dangerous)
   // if (import.meta.env.VITE_MOCK_MSAL === 'true') return 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhdWQiOiJhcGk6Ly9ibGFibGFiIiwiaXNzIjoiaHR0cHM6Ly9kdXN0LmR1c3Rlc2VuLnZ0ZmsubmV0L2hhaGFoLyIsImlhdCI6MTcwNjM2MDM5MiwibmJmIjoxNzA2MzYwMzkyLCJleHAiOjE3MDYzNjU4MjAsImFjciI6IjEiLCJhaW8iOiJiYWJhYmFiYWIiLCJhbXIiOlsicnNhIiwibWZhIl0sInJvbGVzIjpbImR1c3RfYWNjZXNzIiwiYWRtaW5fYWNjZXNzIl0sImFwcGlkIjoiZ3VkZW5lIHZlaXQiLCJhcHBpZGFjciI6IjAiLCJmYW1pbHlfbmFtZSI6IlNww7hrZWxzZSIsImdpdmVuX25hbWUiOiJEZW1vIiwiaXBhZGRyIjoiMjAwMToyMDIwOjQzNDE6ZmNiYjoyOTU5OjFjNmE6Y2RhYjoyNGUwIiwibmFtZSI6IkRlbW8gU3DDuGtlbHNlIiwib2lkIjoiMTIzNDUiLCJvbnByZW1fc2lkIjoiU1VTVVNVUyIsInJoIjoic2kgc2Vub3IiLCJzY3AiOiJ1c2VyX2ltcGVyc29uYXRpb24iLCJzdWIiOiJtYXJpbmUiLCJ0aWQiOiJza2xlbW1lIiwidW5pcXVlX25hbWUiOiJkZW1vLnNwb2tlbHNlQHZlc3Rmb2xkZnlsa2Uubm8iLCJ1cG4iOiJkZW1vLnNwb2tlbHNlQHZlc3Rmb2xkZnlsa2Uubm8iLCJ1dGkiOiJob2hvbyIsInZlciI6IjEuMCJ9.64xzW92dVIXpZ_2OXQ6KQHITtYByDZJn1ycX3p_EkW4'
   let accessToken
-  if(!decoded) {
+  if (!decoded) {
     decoded = false
   }
   try {
     const msalClient = await getMsalClient()
     if (!msalClient.getActiveAccount()) {
-      console.log('Ingen aktiv bruker her enda - venter på ferdig pålogging før vi gjør API spørringer')
       throw new Error('User not logged in yet - waiting for successful login')
     }
     accessToken = (await msalClient.acquireTokenSilent({ scopes: [import.meta.env.VITE_VIKAR_API_SCOPE] })).accessToken
-    if(decoded) {
+    if (decoded) {
       // Return the decoded token
       const result = {
         upn: '',
@@ -42,26 +40,38 @@ export const getVikarToken = async (decoded) => {
 
 const vikarRequest = async (method, endpoint, body) => {
   const accessToken = await getVikarToken()
-  const headers = {
-    authorization: `Bearer ${accessToken}`
+
+  const request = {
+    method: method.toUpperCase(),
+    headers: {
+      authorization: `Bearer ${accessToken}`
+    }
   }
-  if (['get', 'delete'].includes(method.toLowerCase())) {
-    const res = await axios[method](`${import.meta.env.VITE_VIKAR_API_URI}/${endpoint}`, { headers })
-    return { status: res.status, data: res.data }
-  } else {
-    const res = await axios[method](`${import.meta.env.VITE_VIKAR_API_URI}/${endpoint}`, body, { headers })
-    return { status: res.status, data: res.data }
+
+  if (!['get', 'delete'].includes(method.toLowerCase()) && body) {
+    request.body = JSON.stringify(body)
   }
+
+  const response = await fetch(`${import.meta.env.VITE_VIKAR_API_URI}/${endpoint}`, request)
+
+  if (!response.ok) {
+    const errorData = await response.json()
+    console.error('API', response.status,'request error on a', method, 'request. StatusText:', response.statusText, '-> ErrorData:', errorData)
+    return { status: response.status, data: response.statusText }
+  }
+
+  const data = await response.json()
+  return { status: response.status, data }
 }
 
 // Get Substitutions for a user
 export const getSubstitutions = async (substituteUpn, teacherUpn, status, years) => {
   // Setup query parameters
   let queryParams = [];
-  if(substituteUpn) queryParams.push(`substituteUpn=${substituteUpn}`)
-  if(teacherUpn) queryParams.push(`teacherUpn=${teacherUpn}`)
-  if(status) queryParams.push(`status=${status}`)
-  if(years) queryParams.push(`years=${years}`)
+  if (substituteUpn) queryParams.push(`substituteUpn=${substituteUpn}`)
+  if (teacherUpn) queryParams.push(`teacherUpn=${teacherUpn}`)
+  if (status) queryParams.push(`status=${status}`)
+  if (years) queryParams.push(`years=${years}`)
 
   let query = '';
   for(let i = 0; i < queryParams.length; i++) {
@@ -70,8 +80,8 @@ export const getSubstitutions = async (substituteUpn, teacherUpn, status, years)
 
   if (import.meta.env.VITE_MOCK_API && import.meta.env.VITE_MOCK_API === 'true') {
     // const mockData = await import('./helpers/api-mock-data')
-    if(substituteUpn === 'marius.netten.skeie@telemarkfylke.no' && status === 'active') return { status: 200, data: mockData.mySubstitutions.filter(sub => sub.status === 'active') }
-    if(teacherUpn) return { status: 200, data: mockData.mySubstitutions.filter(sub => sub.teacherUpn === teacherUpn) }
+    if (substituteUpn === 'marius.netten.skeie@telemarkfylke.no' && status === 'active') return { status: 200, data: mockData.mySubstitutions.filter(sub => sub.status === 'active') }
+    if (teacherUpn) return { status: 200, data: mockData.mySubstitutions.filter(sub => sub.teacherUpn === teacherUpn) }
     return { status: 200, data: mockData.mySubstitutions.filter(sub => sub.status === 'expired') }
   }
   return await vikarRequest('get', `substitutions?${query}`)
@@ -94,11 +104,11 @@ export const getUsers = async (searchTerm, returnSelf) => {
 }
 
 export const extendSelectedSubstitutions = async (substitutions) => {
-  if(!substitutions || !Array.isArray(substitutions) || substitutions.length === 0) throw new Error('Cannot renew substitution because no request was provided');
+  if (!substitutions || !Array.isArray(substitutions) || substitutions.length === 0) throw new Error('Cannot renew substitution because no request was provided');
   for (const substitution of substitutions) {
-    if(!substitution.substituteUpn) throw new Error(`Cannot renew substitution because 'substituteUpn'-property is missing`)
-    if(!substitution.teacherUpn) throw new Error(`Cannot renew substitution because 'teacherUpn'-property is missing`)
-    if(!substitution.teamId) throw new Error(`Cannot renew substitution because 'teamId'-property is missing`)
+    if (!substitution.substituteUpn) throw new Error(`Cannot renew substitution because 'substituteUpn'-property is missing`)
+    if (!substitution.teacherUpn) throw new Error(`Cannot renew substitution because 'teacherUpn'-property is missing`)
+    if (!substitution.teamId) throw new Error(`Cannot renew substitution because 'teamId'-property is missing`)
   }
   if (import.meta.env.VITE_MOCK_API && import.meta.env.VITE_MOCK_API === 'true') {
     return { status: 200, data: 'Success' }
@@ -127,14 +137,3 @@ export const putSchools = async (id, schoolData) => {
   }
   return await vikarRequest('put', `schools/${id}`, schoolData)
 }
-
-// // Get chucky
-// export const getChuck = async () => {
-//   const res = (await axios.get('https://api.chucknorris.io/jokes/categories')).data
-//   return res.map(ele => {
-//     return {
-//       value: ele,
-//       category: 'Et valg'
-//     }
-//   })
-// }
