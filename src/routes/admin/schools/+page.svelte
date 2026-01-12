@@ -53,7 +53,7 @@
 
     const addNewSchool = async () => {
         let schoolIds = []
-        if(selected.length > 0 ) {
+        if (selected.length > 0 ) {
             selected.forEach(school => {
                 schoolIds.push(school[2])
             });
@@ -67,7 +67,7 @@
         cleanUp = true
         schoolName = ''
         postSchoolsResponse = await postSchools(schoolObj)
-        if(postSchoolsResponse.status === 201) {
+        if (postSchoolsResponse.status === 201) {
            reloadPage()
         } else {
             console.log('Error adding school')
@@ -81,7 +81,7 @@
             data = []
         }
         const response = await getSchools()
-        if(response.status === 200) {
+        if (response.status === 200) {
             for (const school of response.data) {
                 data.push([await school.name, await school.permittedSchools, await school._id ])            
             }
@@ -106,7 +106,7 @@
         pageHeader = `Oppdaterer rettigheter for ${objectDataToBeEdited[0]}`
         const permittedSchools = []
         // Get the school ids from the selected schools
-        if(import.meta.env.VITE_MOCK_API && import.meta.env.VITE_MOCK_API === 'true'){
+        if (import.meta.env.VITE_MOCK_API && import.meta.env.VITE_MOCK_API === 'true') {
                 // Pretend to wait for api call
                 spinner = true
                 await new Promise(resolve => setTimeout(resolve, 2000))
